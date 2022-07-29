@@ -11,7 +11,7 @@ import (
 type User struct {
 	Model
 	FullName     string `json:"full_name" binding:"required"`
-	Email        string `json:"email" binding:"required,email" gorm:"unique"`
+	Email        string `json:"email" binding:"required" gorm:"unique"`
 	Location     string `json:"location" binding:"required"`
 	Password     string `json:"password,omitempty" gorm:"-"`
 	PasswordHash string `json:"password_hash"`
@@ -31,6 +31,15 @@ type KitchenStaff struct {
 }
 type Admin struct {
 	User
+}
+
+type ForgotPassword struct {
+	Email string `json:"email"`
+}
+
+type ResetPassword struct {
+	NewPassword        string `json:"new_password"`
+	ConfirmNewPassword string `json:"confirm_new_password"`
 }
 
 func (user *User) ValidMailAddress() bool {
@@ -60,6 +69,14 @@ func (user *User) ValidateEmail() bool {
 func (user *User) ValidateDecagonEmail() bool {
 	decagon := strings.Split(user.Email, "@")
 	if decagon[1] == "decagon.dev" {
+		return true
+	}
+	return false
+}
+
+func (user *User) ValidAdminDecagonEmail() bool {
+	decagonEmail := strings.Split(user.Email, "@")
+	if decagonEmail[1] == "decagonhq.com" {
 		return true
 	}
 	return false

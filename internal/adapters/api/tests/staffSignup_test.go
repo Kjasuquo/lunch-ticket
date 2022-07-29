@@ -2,24 +2,27 @@ package tests
 
 import (
 	"encoding/json"
+	"net/http"
+	"net/http/httptest"
+	"strings"
+	"testing"
+
 	"github.com/decadevs/lunch-api/cmd/server"
 	"github.com/decadevs/lunch-api/internal/adapters/api"
 	"github.com/decadevs/lunch-api/internal/adapters/repository/mocks"
 	"github.com/decadevs/lunch-api/internal/core/models"
 	"github.com/golang/mock/gomock"
 	"github.com/stretchr/testify/assert"
-	"net/http"
-	"net/http/httptest"
-	"strings"
-	"testing"
 )
 
-func TestFoodBeneficiarySignUpEmailExists(t *testing.T) {
+func TestStaffSignUpEmailExists(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	mockDb := mocks.NewMockUserRepository(ctrl)
+	mockMail := mocks.NewMockMailerRepository(ctrl)
 
 	r := &api.HTTPHandler{
-		UserService: mockDb,
+		UserService:   mockDb,
+		MailerService: mockMail,
 	}
 
 	router := server.SetupRouter(r, mockDb)
@@ -31,26 +34,25 @@ func TestFoodBeneficiarySignUpEmailExists(t *testing.T) {
 		PasswordHash: "",
 		Location:     "ETP",
 	}
-	beneficiary := models.FoodBeneficiary{
-		User:  user,
-		Stack: "Golang",
+	staff := models.KitchenStaff{
+		User: user,
 	}
 
-	newUser, err := json.Marshal(beneficiary)
+	newUser, err := json.Marshal(staff)
 	if err != nil {
 		t.Fail()
 	}
-	mockDb.EXPECT().FindFoodBenefactorByEmail(beneficiary.Email).Return(&beneficiary, nil)
+	mockDb.EXPECT().FindKitchenStaffByEmail(staff.Email).Return(&staff, nil)
 
 	w := httptest.NewRecorder()
-	req, _ := http.NewRequest("POST", "/api/v1/user/beneficiarysignup", strings.NewReader(string(newUser)))
+	req, _ := http.NewRequest("POST", "/api/v1/user/kitchenstaffsignup", strings.NewReader(string(newUser)))
 	router.ServeHTTP(w, req)
 
 	assert.Equal(t, http.StatusBadRequest, w.Code)
 	assert.Contains(t, w.Body.String(), "email exists")
 }
 
-func TestFoodBeneficiarySignUpBadRequest(t *testing.T) {
+func TestStaffSignUpBadRequest(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	mockDb := mocks.NewMockUserRepository(ctrl)
 
@@ -77,28 +79,26 @@ func TestFoodBeneficiarySignUpBadRequest(t *testing.T) {
 		},
 	}
 
-	foodBeneficiary := models.FoodBeneficiary{
-		User:  user[0],
-		Stack: "java",
+	staff := models.KitchenStaff{
+		User: user[0],
 	}
 
-	newUser, err := json.Marshal(foodBeneficiary)
+	newUser, err := json.Marshal(staff)
 	if err != nil {
 		t.Fail()
 	}
-	beneficiary := models.FoodBeneficiary{
-		User:  user[1],
-		Stack: "gOLANG",
+	kitchenStaff := models.KitchenStaff{
+		User: user[1],
 	}
 
-	newUse, err := json.Marshal(beneficiary)
+	newUse, err := json.Marshal(kitchenStaff)
 	if err != nil {
 		t.Fail()
 	}
 
 	t.Run("Bad request", func(t *testing.T) {
 		w := httptest.NewRecorder()
-		req, _ := http.NewRequest("POST", "/api/v1/user/beneficiarysignup", strings.NewReader(string(newUser)))
+		req, _ := http.NewRequest("POST", "/api/v1/user/kitchenstaffsignup", strings.NewReader(string(newUser)))
 		router.ServeHTTP(w, req)
 
 		assert.Equal(t, http.StatusBadRequest, w.Code)
@@ -106,9 +106,9 @@ func TestFoodBeneficiarySignUpBadRequest(t *testing.T) {
 	})
 
 	t.Run("Correct details", func(t *testing.T) {
-		mockDb.EXPECT().FindFoodBenefactorByEmail(beneficiary.Email).Return(&beneficiary, nil)
+		mockDb.EXPECT().FindKitchenStaffByEmail(kitchenStaff.Email).Return(&kitchenStaff, nil)
 		w := httptest.NewRecorder()
-		req, _ := http.NewRequest("POST", "/api/v1/user/beneficiarysignup", strings.NewReader(string(newUse)))
+		req, _ := http.NewRequest("POST", "/api/v1/user/kitchenstaffsignup", strings.NewReader(string(newUse)))
 		router.ServeHTTP(w, req)
 
 		assert.Equal(t, http.StatusBadRequest, w.Code)

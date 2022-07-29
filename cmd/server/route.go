@@ -27,27 +27,41 @@ func SetupRouter(handler *api.HTTPHandler, userService ports.UserService) *gin.E
 
 	r := router.Group("/api/v1")
 	{
+
+		r.GET("ping", handler.PingHandler)
 		r.POST("/user/beneficiarysignup", handler.FoodBeneficiarySignUp)
+		r.PATCH("/user/beneficiaryverifyemail/:token", handler.BeneficiaryVerifyEmail)
 		r.POST("/user/kitchenstaffsignup", handler.KitchenStaffSignUp)
+		r.PATCH("/user/kitchenstaffverifyemail/:token", handler.KitchenStaffVerifyEmail)
 		r.POST("/user/adminsignup", handler.AdminSignUp)
+		r.PATCH("/user/adminverifyemail/:token", handler.AdminVerifyEmail)
 		r.POST("/user/kitchenstafflogin", handler.LoginKitchenStaffHandler)
 		r.POST("/user/benefactorlogin", handler.LoginFoodBenefactorHandler)
 		r.POST("/user/adminlogin", handler.LoginAdminHandler)
+		r.POST("/user/beneficiaryforgotpassword", handler.FoodBeneficiaryForgotPassword)
+		r.PATCH("/user/beneficiaryresetpassword/:token", handler.FoodBeneficiaryResetPassword)
+		r.POST("/user/kitchenstaffforgotpassword", handler.KitchenStaffForgotPassword)
+		r.PATCH("/user/kitchenstaffresetpassword/:token", handler.KitchenStaffResetPassword)
+		r.POST("/user/adminforgotpassword", handler.AdminForgotPassword)
+		r.PATCH("/user/adminresetpassword/:token", handler.AdminResetPassword)
 	}
 
 	// authorizeKitchenStaff authorizes all authorized kitchen staff handler
 	authorizeKitchenStaff := r.Group("/staff")
 	authorizeKitchenStaff.Use(middleware.AuthorizeKitchenStaff(userService.FindKitchenStaffByEmail, userService.TokenInBlacklist))
 	{
-
+		authorizeKitchenStaff.POST("/kitchenstafflogout", handler.KitchenStaffLogout)
+		authorizeKitchenStaff.PUT("changefoodstatus", handler.ChangeFoodStatus)
 	}
 
 	// authorizeBenefactor authorizes all authorized benefactor handler
 	authorizeBenefactor := r.Group("/benefactor")
 	authorizeBenefactor.Use(middleware.AuthorizeFoodBenefactor(userService.FindFoodBenefactorByEmail, userService.TokenInBlacklist))
 	{
+		authorizeBenefactor.POST("/beneficiarylogout", handler.FoodBeneficiaryLogout)
 		authorizeBenefactor.GET("/brunch", handler.GetBrunchHandle)
 		authorizeBenefactor.GET("/dinner", handler.GetDinnerHandle)
+		authorizeBenefactor.GET("/getusers", handler.GetUsers)
 	}
 
 	// authorizeAdmin authorizes all authorized admin handler

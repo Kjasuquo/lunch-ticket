@@ -39,11 +39,48 @@ func (p *Postgres) FindFoodBenefactorByLocation(location string) (*models.FoodBe
 	return user, nil
 }
 
+// FindUserById finds a benefactor by location
+func (p *Postgres) FindUserById(id string) (*models.FoodBeneficiary, error) {
+	user := &models.FoodBeneficiary{}
+	if err := p.DB.Where("id =?", id).First(user).Error; err != nil {
+		return nil, err
+	}
+	return user, nil
+}
+
+// UserResetPassword resets a benefactor's password
+func (p *Postgres) UserResetPassword(id, newPassword string) (*models.FoodBeneficiary, error) {
+	user := &models.FoodBeneficiary{}
+	if err := p.DB.Model(user).Where("id =?", id).Update("password_hash", newPassword).Error; err != nil {
+		return nil, err
+	}
+	return user, nil
+}
+
 // CreateFoodBenefactor creates a benefactor in the database
 func (p *Postgres) CreateFoodBenefactor(user *models.FoodBeneficiary) (*models.FoodBeneficiary, error) {
 	var err error
 	user.CreatedAt = time.Now()
-	user.IsActive = true
+	user.IsActive = false
 	err = p.DB.Create(user).Error
 	return user, err
+}
+
+//FoodBeneficiaryEmailVerification verifies the beneficiary email address
+func (p *Postgres) FoodBeneficiaryEmailVerification(id string) (*models.FoodBeneficiary, error) {
+	user := &models.FoodBeneficiary{}
+	if err := p.DB.Model(user).Where("id =?", id).Update("is_active", true).Error; err != nil {
+		return nil, err
+	}
+	return user, nil
+}
+
+//FindAllFoodBeneficiary finds and list all food beneficiaries
+func (p *Postgres) FindAllFoodBeneficiary(query map[string]string) ([]models.FoodBeneficiary, error) {
+	var users []models.FoodBeneficiary
+	err := p.DB.Model(&models.FoodBeneficiary{}).Where("is_active = true").Where(query).Find(&users).Error
+	if err != nil {
+		return nil, err
+	}
+	return users, nil
 }

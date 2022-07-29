@@ -13,7 +13,13 @@ func Injection(db *gorm.DB) {
 	userRepository := repository.NewUser(db)
 	userService := service.NewUserService(userRepository)
 
-	Handler := api.NewHTTPHandler(userService)
+	mailerRepository := repository.NewMail()
+	mailerService := service.NewMailerService(mailerRepository)
+
+	AWSRepository := repository.NewAWS()
+	AWSService := service.NewAWSServices(AWSRepository)
+
+	Handler := api.NewHTTPHandler(userService, mailerService, AWSService)
 	router := SetupRouter(Handler, userService)
 
 	_ = router.Run(":" + helpers.Instance.Port)
