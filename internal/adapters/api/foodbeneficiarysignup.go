@@ -8,7 +8,18 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-// FoodBeneficiarySignUp creates a new food benefactor
+// CreateUser godoc
+// @Summary      Create User
+// @Description  creates a user
+// @Tags         Users
+// @Accept       json
+// @Produce      json
+// @Param user body models.FoodBeneficiary true "Add user"
+// @Success      201  {string}  string "success"
+// @Failure      400  {string}  string "error"
+// @Failure      404  {string}  string "error"
+// @Failure      500  {string}  string "error"
+// @Router       /user/beneficiarysignup [post]
 func (u *HTTPHandler) FoodBeneficiarySignUp(c *gin.Context) {
 	var user *models.FoodBeneficiary
 	err := c.ShouldBindJSON(&user)
@@ -43,8 +54,8 @@ func (u *HTTPHandler) FoodBeneficiarySignUp(c *gin.Context) {
 	emailToken, _ := u.MailerService.GenerateNonAuthToken(user.Email, secretString)
 	emailLink := os.Getenv("BENEFICIARY_EMAIL")
 	link := emailLink + *emailToken
-	body := "Click this <a href='" + link + "'>link</a> to verify your email."
-	html := "<strong>" + body + "</strong>"
+	body := "Click this <a href=' " + " " + link + " '>link</a> to verify your email."
+	html := "<strong> " + body + " </strong>"
 
 	//initialize email sent out
 	privateAPIKey := os.Getenv("MAILGUN_API_KEY")
@@ -60,6 +71,18 @@ func (u *HTTPHandler) FoodBeneficiarySignUp(c *gin.Context) {
 
 }
 
+// VerifyEmail godoc
+// @Summary      Verify Email
+// @Description  verifies a food beneficiary email
+// @Tags         Users
+// @Accept       json
+// @Produce      json
+// @Param token path string true "Token string"
+// @Success      200  {string}  string "success"
+// @Failure      400  {string}  string "error"
+// @Failure      404  {string}  string "error"
+// @Failure      500  {string}  string "error"
+// @Router       /user/beneficiaryverifyemail/{token} [patch]
 func (u *HTTPHandler) BeneficiaryVerifyEmail(c *gin.Context) {
 	token := c.Param("token")
 	secretString := os.Getenv("JWT_SECRET")
