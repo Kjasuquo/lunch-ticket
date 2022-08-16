@@ -25,6 +25,44 @@ const docTemplate = `{
     "host": "{{.Host}}",
     "basePath": "{{.BasePath}}",
     "paths": {
+        "/admin/blockedusers": {
+            "get": {
+                "description": "Admin gets to see all blocked users with this endpoint. It is an authorized route to only ADMIN",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Users"
+                ],
+                "summary": "This endpoint enables admin to see all blocked users",
+                "responses": {
+                    "200": {
+                        "description": "blocked users successfully gotten",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/models.FoodBeneficiary"
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "bad request",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "500": {
+                        "description": "internal server error",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
         "/admin/createtimetable": {
             "post": {
                 "description": "creates meal by collecting fields in models.Food in a form data. Note: \"images\" is a file to be uploaded in jpeg or png. \"name\" is the name of the meal, \"type\" is either brunch or dinner, \"weekday\" can be ignored but it is either monday - sunday, \"kitchen\" is either uno, edo-tech park, etc. \"year\", \"month\" and \"day\" are numbers. It is an authorized route to only ADMIN",
@@ -54,6 +92,41 @@ const docTemplate = `{
                         "description": "Successfully Created",
                         "schema": {
                             "type": "string"
+                        }
+                    },
+                    "400": {
+                        "description": "bad request",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "500": {
+                        "description": "internal server error",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
+        "/admin/numberblocked": {
+            "get": {
+                "description": "Admin gets to see how manuy beneficiaries blocked. It is an authorized route to only ADMIN",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Users"
+                ],
+                "summary": "Gets number of blocked benefeciary",
+                "responses": {
+                    "200": {
+                        "description": "successfully gotten",
+                        "schema": {
+                            "type": "number"
                         }
                     },
                     "400": {
@@ -167,6 +240,41 @@ const docTemplate = `{
                 }
             }
         },
+        "/benefactor/qrmealrecords": {
+            "post": {
+                "description": "This is used to tell if a food beneficiary has scanned the QR code previously or not,it then logs the information .",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "user"
+                ],
+                "summary": "Logs meal records in the database after successful QR code scan",
+                "responses": {
+                    "200": {
+                        "description": "success",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "400": {
+                        "description": "meal already served",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "500": {
+                        "description": "internal server error",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
         "/beneficiarylogout": {
             "post": {
                 "description": "Log out a kitchen staff",
@@ -224,6 +332,41 @@ const docTemplate = `{
                 }
             }
         },
+        "/staff/generateqrcode": {
+            "get": {
+                "description": "This should be used to get the food in the database to generate QR code meant for the day.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Food"
+                ],
+                "summary": "Gets the food in the database required to generate QR code",
+                "responses": {
+                    "200": {
+                        "description": "success",
+                        "schema": {
+                            "$ref": "#/definitions/models.Food"
+                        }
+                    },
+                    "400": {
+                        "description": "invalid meal type",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "500": {
+                        "description": "internal server error",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
         "/user/adminlogin": {
             "post": {
                 "description": "Allows Admin to log in in order to use app dashboard. Admin must be active before he or she can log in",
@@ -263,6 +406,108 @@ const docTemplate = `{
                     },
                     "500": {
                         "description": "internal server error",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
+        "/user/adminsignup": {
+            "post": {
+                "description": "creates a user",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Users"
+                ],
+                "summary": "Create User",
+                "parameters": [
+                    {
+                        "description": "Add user",
+                        "name": "user",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/models.Admin"
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "success",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "400": {
+                        "description": "error",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "404": {
+                        "description": "error",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "500": {
+                        "description": "error",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
+        "/user/adminverifyemail/{token}": {
+            "patch": {
+                "description": "verifies an admin email",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Users"
+                ],
+                "summary": "Verify Email",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Token string",
+                        "name": "token",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "success",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "400": {
+                        "description": "error",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "404": {
+                        "description": "error",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "500": {
+                        "description": "error",
                         "schema": {
                             "type": "string"
                         }
@@ -600,6 +845,58 @@ const docTemplate = `{
         }
     },
     "definitions": {
+        "models.Admin": {
+            "type": "object",
+            "required": [
+                "email",
+                "full_name",
+                "location"
+            ],
+            "properties": {
+                "avatar": {
+                    "type": "string"
+                },
+                "created_at": {
+                    "type": "string"
+                },
+                "deleted_at": {
+                    "type": "string"
+                },
+                "email": {
+                    "type": "string"
+                },
+                "full_name": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "is_active": {
+                    "type": "boolean"
+                },
+                "is_block": {
+                    "type": "boolean"
+                },
+                "location": {
+                    "type": "string"
+                },
+                "password": {
+                    "type": "string"
+                },
+                "password_hash": {
+                    "type": "string"
+                },
+                "status": {
+                    "type": "string"
+                },
+                "token": {
+                    "type": "string"
+                },
+                "updated_at": {
+                    "type": "string"
+                }
+            }
+        },
         "models.Food": {
             "type": "object",
             "properties": {

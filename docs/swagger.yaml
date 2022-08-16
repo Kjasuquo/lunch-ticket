@@ -1,5 +1,40 @@
 basePath: /api/v1
 definitions:
+  models.Admin:
+    properties:
+      avatar:
+        type: string
+      created_at:
+        type: string
+      deleted_at:
+        type: string
+      email:
+        type: string
+      full_name:
+        type: string
+      id:
+        type: string
+      is_active:
+        type: boolean
+      is_block:
+        type: boolean
+      location:
+        type: string
+      password:
+        type: string
+      password_hash:
+        type: string
+      status:
+        type: string
+      token:
+        type: string
+      updated_at:
+        type: string
+    required:
+    - email
+    - full_name
+    - location
+    type: object
   models.Food:
     properties:
       adminName:
@@ -156,6 +191,32 @@ info:
   title: Lunch Wallet Swagger API
   version: "1.0"
 paths:
+  /admin/blockedusers:
+    get:
+      consumes:
+      - application/json
+      description: Admin gets to see all blocked users with this endpoint. It is an
+        authorized route to only ADMIN
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: blocked users successfully gotten
+          schema:
+            items:
+              $ref: '#/definitions/models.FoodBeneficiary'
+            type: array
+        "400":
+          description: bad request
+          schema:
+            type: string
+        "500":
+          description: internal server error
+          schema:
+            type: string
+      summary: This endpoint enables admin to see all blocked users
+      tags:
+      - Users
   /admin/createtimetable:
     post:
       consumes:
@@ -190,6 +251,30 @@ paths:
       summary: Admin creates meal
       tags:
       - Food
+  /admin/numberblocked:
+    get:
+      consumes:
+      - application/json
+      description: Admin gets to see how manuy beneficiaries blocked. It is an authorized
+        route to only ADMIN
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: successfully gotten
+          schema:
+            type: number
+        "400":
+          description: bad request
+          schema:
+            type: string
+        "500":
+          description: internal server error
+          schema:
+            type: string
+      summary: Gets number of blocked benefeciary
+      tags:
+      - Users
   /benefactor/allfood:
     get:
       consumes:
@@ -262,6 +347,30 @@ paths:
       summary: Gets all the dinner in the database using the date of the present day
       tags:
       - Food
+  /benefactor/qrmealrecords:
+    post:
+      consumes:
+      - application/json
+      description: This is used to tell if a food beneficiary has scanned the QR code
+        previously or not,it then logs the information .
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: success
+          schema:
+            type: string
+        "400":
+          description: meal already served
+          schema:
+            type: string
+        "500":
+          description: internal server error
+          schema:
+            type: string
+      summary: Logs meal records in the database after successful QR code scan
+      tags:
+      - user
   /beneficiarylogout:
     post:
       consumes:
@@ -300,6 +409,30 @@ paths:
       summary: Logout User
       tags:
       - Users
+  /staff/generateqrcode:
+    get:
+      consumes:
+      - application/json
+      description: This should be used to get the food in the database to generate
+        QR code meant for the day.
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: success
+          schema:
+            $ref: '#/definitions/models.Food'
+        "400":
+          description: invalid meal type
+          schema:
+            type: string
+        "500":
+          description: internal server error
+          schema:
+            type: string
+      summary: Gets the food in the database required to generate QR code
+      tags:
+      - Food
   /user/adminlogin:
     post:
       consumes:
@@ -329,6 +462,73 @@ paths:
           schema:
             type: string
       summary: Login Admin
+      tags:
+      - Users
+  /user/adminsignup:
+    post:
+      consumes:
+      - application/json
+      description: creates a user
+      parameters:
+      - description: Add user
+        in: body
+        name: user
+        required: true
+        schema:
+          $ref: '#/definitions/models.Admin'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: success
+          schema:
+            type: string
+        "400":
+          description: error
+          schema:
+            type: string
+        "404":
+          description: error
+          schema:
+            type: string
+        "500":
+          description: error
+          schema:
+            type: string
+      summary: Create User
+      tags:
+      - Users
+  /user/adminverifyemail/{token}:
+    patch:
+      consumes:
+      - application/json
+      description: verifies an admin email
+      parameters:
+      - description: Token string
+        in: path
+        name: token
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: success
+          schema:
+            type: string
+        "400":
+          description: error
+          schema:
+            type: string
+        "404":
+          description: error
+          schema:
+            type: string
+        "500":
+          description: error
+          schema:
+            type: string
+      summary: Verify Email
       tags:
       - Users
   /user/benefactorlogin:
